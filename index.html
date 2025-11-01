@@ -1,203 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Supabase CRUD App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  </head>
-  <body class="bg-gray-100 text-gray-900">
-    <div class="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-lg shadow">
-      <h1 class="text-2xl font-bold text-center mb-6">Supabase CRUD Demo</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supabase CRUD Improved</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow p-6">
+    <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">Supabase CRUD App</h1>
 
-      <!-- Login / Signup -->
-      <div id="auth-section">
-        <input
-          id="email"
-          type="email"
-          placeholder="Email"
-          class="border p-2 w-full mb-2 rounded"
-        />
-        <input
-          id="password"
-          type="password"
-          placeholder="Password"
-          class="border p-2 w-full mb-4 rounded"
-        />
-        <button
-          id="loginBtn"
-          class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2"
-        >
-          Login
-        </button>
-        <button
-          id="signupBtn"
-          class="bg-green-600 text-white px-4 py-2 rounded w-full"
-        >
-          Sign Up
-        </button>
-      </div>
-
-      <!-- CRUD Section -->
-      <div id="app-section" class="hidden">
-        <div class="flex justify-between mb-4">
-          <h2 class="text-xl font-semibold">Your Records</h2>
-          <button
-            id="logoutBtn"
-            class="bg-red-500 text-white px-3 py-1 rounded"
-          >
-            Logout
-          </button>
-        </div>
-
-        <div class="flex gap-2 mb-4">
-          <input
-            id="title"
-            placeholder="Title"
-            class="border p-2 flex-1 rounded"
-          />
-          <input
-            id="description"
-            placeholder="Description"
-            class="border p-2 flex-1 rounded"
-          />
-          <button id="addBtn" class="bg-blue-600 text-white px-4 rounded">
-            Add
-          </button>
-        </div>
-
-        <ul id="recordsList" class="space-y-2"></ul>
-      </div>
+    <!-- Auth Section -->
+    <div id="auth-section" class="space-y-4">
+      <input id="email" type="email" placeholder="Email" class="border p-2 w-full rounded" />
+      <input id="password" type="password" placeholder="Password" class="border p-2 w-full rounded" />
+      <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">Login</button>
+      <button id="signupBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Sign Up</button>
     </div>
 
-    <script>
-      const SUPABASE_URL = "https://rnphputikyzilhxsmtrp.supabase.co";
-      const SUPABASE_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucGhwdXRpa3l6aWxoeHNtdHJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMDc5MTIsImV4cCI6MjA3NzU4MzkxMn0.fV-dFs6L_r7ZZx4tXeJNvPsLfey332qiLysUVsTY-a8";
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- App Section -->
+    <div id="app-section" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">Your Records</h2>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Logout</button>
+      </div>
 
-      const authSection = document.getElementById("auth-section");
-      const appSection = document.getElementById("app-section");
-      const recordsList = document.getElementById("recordsList");
+      <!-- Add record -->
+      <div class="flex flex-col md:flex-row gap-2 mb-4">
+        <input id="title" placeholder="Title" class="border p-2 flex-1 rounded" />
+        <input id="description" placeholder="Description" class="border p-2 flex-1 rounded" />
+        <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded">Add</button>
+      </div>
 
-      const emailInput = document.getElementById("email");
-      const passwordInput = document.getElementById("password");
-      const titleInput = document.getElementById("title");
-      const descInput = document.getElementById("description");
+      <!-- Records list -->
+      <ul id="recordsList" class="space-y-2"></ul>
+    </div>
+  </div>
 
-      // ---- Auth ----
-      async function signUp() {
-        const { data, error } = await supabase.auth.signUp({
-          email: emailInput.value,
-          password: passwordInput.value,
-        });
-        if (error) alert(error.message);
-        else alert("Signup successful! You can now log in.");
-      }
+  <!-- Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4 text-gray-700">Edit Record</h3>
+      <input id="editTitle" type="text" placeholder="Title" class="border p-2 w-full mb-2 rounded" />
+      <input id="editDesc" type="text" placeholder="Description" class="border p-2 w-full mb-4 rounded" />
+      <div class="flex justify-end gap-2">
+        <button id="cancelEdit" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">Cancel</button>
+        <button id="saveEdit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Save</button>
+      </div>
+    </div>
+  </div>
 
-      async function login() {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: emailInput.value,
-          password: passwordInput.value,
-        });
-        if (error) alert(error.message);
-        else showApp();
-      }
+  <script>
+    const SUPABASE_URL = 'https://rnphputikyzilhxsmtrp.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucGhwdXRpa3l6aWxoeHNtdHJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMDc5MTIsImV4cCI6MjA3NzU4MzkxMn0.fV-dFs6L_r7ZZx4tXeJNvPsLfey332qiLysUVsTY-a8';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      async function logout() {
-        await supabase.auth.signOut();
-        appSection.classList.add("hidden");
-        authSection.classList.remove("hidden");
-      }
+    const authSection = document.getElementById('auth-section');
+    const appSection = document.getElementById('app-section');
+    const recordsList = document.getElementById('recordsList');
 
-      // ---- CRUD ----
-      async function loadRecords() {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from("records")
-          .select("*")
-          .eq("user_id", user.id);
-        if (error) {
-          alert(error.message);
-          return;
-        }
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const titleInput = document.getElementById('title');
+    const descInput = document.getElementById('description');
 
-        recordsList.innerHTML = "";
-        data.forEach((rec) => {
-          const li = document.createElement("li");
-          li.className = "border p-2 rounded flex justify-between items-center";
-          li.innerHTML = `
+    const editModal = document.getElementById('editModal');
+    const editTitle = document.getElementById('editTitle');
+    const editDesc = document.getElementById('editDesc');
+    const cancelEdit = document.getElementById('cancelEdit');
+    const saveEdit = document.getElementById('saveEdit');
+
+    let currentEditId = null;
+
+    // ---- Auth ----
+    async function signUp() {
+      const { error } = await supabase.auth.signUp({
+        email: emailInput.value,
+        password: passwordInput.value
+      });
+      alert(error ? error.message : 'Signup successful! You can now log in.');
+    }
+
+    async function login() {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput.value,
+        password: passwordInput.value
+      });
+      if (error) alert(error.message);
+      else showApp();
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      appSection.classList.add('hidden');
+      authSection.classList.remove('hidden');
+    }
+
+    // ---- CRUD ----
+    async function loadRecords() {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data, error } = await supabase.from('records').select('*').eq('user_id', user.id);
+      if (error) return alert(error.message);
+      recordsList.innerHTML = '';
+      data.forEach(rec => {
+        const li = document.createElement('li');
+        li.className = 'border p-3 rounded flex justify-between items-center';
+        li.innerHTML = `
           <div>
-            <strong>${rec.title}</strong><br>${rec.description || ""}
+            <strong class="text-blue-700">${rec.title}</strong><br>
+            <span class="text-gray-600">${rec.description || ''}</span>
           </div>
           <div class="space-x-2">
-            <button class="bg-yellow-400 px-2 py-1 rounded" onclick="editRecord(${
-              rec.id
-            }, '${rec.title}', '${rec.description || ""}')">Edit</button>
-            <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteRecord(${
-              rec.id
-            })">Delete</button>
-          </div>
-        `;
-          recordsList.appendChild(li);
-        });
-      }
+            <button class="bg-yellow-400 hover:bg-yellow-500 px-2 py-1 rounded" onclick="openEdit(${rec.id}, '${rec.title}', '${rec.description || ''}')">Edit</button>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded" onclick="deleteRecord(${rec.id})">Delete</button>
+          </div>`;
+        recordsList.appendChild(li);
+      });
+    }
 
-      async function addRecord() {
-        const { data, error } = await supabase.from("records").insert({
-          title: titleInput.value,
-          description: descInput.value,
-        });
-        if (error) alert(error.message);
-        else {
-          titleInput.value = "";
-          descInput.value = "";
-          loadRecords();
-        }
-      }
-
-      async function editRecord(id, title, desc) {
-        const newTitle = prompt("Edit title:", title);
-        const newDesc = prompt("Edit description:", desc);
-        if (newTitle === null) return;
-        const { error } = await supabase
-          .from("records")
-          .update({ title: newTitle, description: newDesc })
-          .eq("id", id);
-        if (error) alert(error.message);
-        else loadRecords();
-      }
-
-      async function deleteRecord(id) {
-        const { error } = await supabase.from("records").delete().eq("id", id);
-        if (error) alert(error.message);
-        else loadRecords();
-      }
-
-      // ---- UI Control ----
-      async function showApp() {
-        authSection.classList.add("hidden");
-        appSection.classList.remove("hidden");
+    async function addRecord() {
+      const { error } = await supabase.from('records').insert({
+        title: titleInput.value,
+        description: descInput.value
+      });
+      if (error) alert(error.message);
+      else {
+        titleInput.value = '';
+        descInput.value = '';
         loadRecords();
       }
+    }
 
-      // ---- Event Listeners ----
-      document.getElementById("signupBtn").onclick = signUp;
-      document.getElementById("loginBtn").onclick = login;
-      document.getElementById("logoutBtn").onclick = logout;
-      document.getElementById("addBtn").onclick = addRecord;
+    async function openEdit(id, title, desc) {
+      currentEditId = id;
+      editTitle.value = title;
+      editDesc.value = desc;
+      editModal.classList.remove('hidden');
+      editModal.classList.add('flex');
+    }
 
-      // Check if already logged in
-      supabase.auth.onAuthStateChange((_event, session) => {
-        if (session) showApp();
-        else {
-          authSection.classList.remove("hidden");
-          appSection.classList.add("hidden");
-        }
-      });
-    </script>
-  </body>
+    async function saveRecordEdit() {
+      const { error } = await supabase.from('records').update({
+        title: editTitle.value,
+        description: editDesc.value
+      }).eq('id', currentEditId);
+      if (error) alert(error.message);
+      else {
+        editModal.classList.add('hidden');
+        editModal.classList.remove('flex');
+        loadRecords();
+      }
+    }
+
+    async function deleteRecord(id) {
+      const { error } = await supabase.from('records').delete().eq('id', id);
+      if (error) alert(error.message);
+      else loadRecords();
+    }
+
+    // ---- UI ----
+    async function showApp() {
+      authSection.classList.add('hidden');
+      appSection.classList.remove('hidden');
+      loadRecords();
+    }
+
+    cancelEdit.onclick = () => {
+      editModal.classList.add('hidden');
+      editModal.classList.remove('flex');
+    };
+    saveEdit.onclick = saveRecordEdit;
+
+    // ---- Event Listeners ----
+    document.getElementById('signupBtn').onclick = signUp;
+    document.getElementById('loginBtn').onclick = login;
+    document.getElementById('logoutBtn').onclick = logout;
+    document.getElementById('addBtn').onclick = addRecord;
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) showApp();
+      else {
+        authSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
 </html>
